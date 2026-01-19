@@ -26,6 +26,7 @@
         <!-- Surefire plugin -->
         <maven.surefire.plugin.version>3.5.2</maven.surefire.plugin.version>
         <allure.version>2.24.0</allure.version>
+        <lombok.version>1.18.34</lombok.version>
     </properties>
 
     <dependencies>
@@ -90,13 +91,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.5.6</version>
-        </dependency>
-
-
             <!-- SLF4J API -->
             <dependency>
                 <groupId>org.slf4j</groupId>
@@ -129,6 +123,15 @@
         </dependency>
 
 
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+
+
         <!-- (Optional) Reduce Selenium/JDK HTTP noise via config only; no extra deps needed -->
 
 
@@ -146,37 +149,120 @@
         </dependencies>
     </dependencyManagement>
 
+<!--    <build>-->
+<!--        <plugins>-->
+<!--            &lt;!&ndash; Run TestNG suite via testng.xml &ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-surefire-plugin</artifactId>-->
+<!--                <version>${maven.surefire.plugin.version}</version>-->
+<!--                <configuration>-->
+<!--                    &lt;!&ndash; Path to your suite file; adjust if it lives under src/test/resources &ndash;&gt;-->
+<!--                    <suiteXmlFiles>-->
+<!--                        <suiteXmlFile>parallelExecution.xml</suiteXmlFile>-->
+<!--                    </suiteXmlFiles>-->
+<!--                    &lt;!&ndash; Helpful for parallel/data-driven runs &ndash;&gt;-->
+<!--                    <forkCount>1</forkCount>-->
+<!--                    <reuseForks>true</reuseForks>-->
+<!--                    <argLine>&#45;&#45;enable-preview</argLine>-->
+<!--                    <systemPropertyVariables>-->
+<!--                        &lt;!&ndash; example: wire environment target for logs/reports &ndash;&gt;-->
+<!--                        <env>QA</env>-->
+<!--                    </systemPropertyVariables>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+
+<!--            &lt;!&ndash; Compiler plugin uses properties (Java 21) &ndash;&gt;-->
+<!--            <plugin>-->
+<!--                <groupId>org.apache.maven.plugins</groupId>-->
+<!--                <artifactId>maven-compiler-plugin</artifactId>-->
+<!--                <configuration>-->
+<!--                    <release>21</release>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
+
+
     <build>
         <plugins>
-            <!-- Run TestNG suite via testng.xml -->
+            <!-- Surefire unchanged (you can keep your preview flag, etc.) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
                 <configuration>
-                    <!-- Path to your suite file; adjust if it lives under src/test/resources -->
                     <suiteXmlFiles>
-                        <suiteXmlFile>testng.xml</suiteXmlFile>
+                        <suiteXmlFile>parallelExecution.xml</suiteXmlFile>
                     </suiteXmlFiles>
-                    <!-- Helpful for parallel/data-driven runs -->
                     <forkCount>1</forkCount>
                     <reuseForks>true</reuseForks>
                     <argLine>--enable-preview</argLine>
                     <systemPropertyVariables>
-                        <!-- example: wire environment target for logs/reports -->
                         <env>QA</env>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
 
-            <!-- Compiler plugin uses properties (Java 21) -->
+            <!-- Compiler plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
-                    <release>21</release>
+                    <!-- IMPORTANT: Use source/target instead of release -->
+                    <source>21</source>
+                    <target>21</target>
+
+                    <!-- Lombok needs these exports at compile time -->
+                    <compilerArgs>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                        <arg>--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                    </compilerArgs>
+
+                    <!-- Annotation processor for main sources -->
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
+
+                <!-- Mirror the same for test sources -->
+                <executions>
+                    <execution>
+                        <id>default-testCompile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+                                <arg>--add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED</arg>
+                                <arg>--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED</arg>
+                                <arg>--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED</arg>
+                                <arg>--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED</arg>
+                                <arg>--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED</arg>
+                            </compilerArgs>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.projectlombok</groupId>
+                                    <artifactId>lombok</artifactId>
+                                    <version>${lombok.version}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
+
+
 </project>
