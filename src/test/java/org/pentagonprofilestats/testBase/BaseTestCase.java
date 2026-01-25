@@ -2,15 +2,11 @@ package org.pentagonprofilestats.testBase;
 
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
-import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import io.qameta.allure.Attachment;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.Platform;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.edge.EdgeDriver;
@@ -20,6 +16,8 @@ import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Wait;
 import org.pentagonprofilestats.pageObjects.PPSHomePageObjects;
 import org.pentagonprofilestats.pageObjects.PPSResultDisplayPageObjects;
 import org.testng.annotations.*;
@@ -40,6 +38,7 @@ public class BaseTestCase {
     public ExtentReports extent;
     public ExtentTest test;
     Properties properties;
+
 
     @BeforeClass(groups = {"smoke", "functional", "positive", "negative", "name"})
     @Parameters({"os","browser"})
